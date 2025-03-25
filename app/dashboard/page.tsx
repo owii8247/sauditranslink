@@ -4,16 +4,16 @@ import Layout from "@/components/Layout";
 import { useSession } from "next-auth/react";
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useTable, usePagination, useSortBy } from "react-table";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination, Paper, TextField, Button } from "@mui/material";
 import { CSVLink } from "react-csv";
 import { format } from "date-fns";
-
 
 export default function Dashboard() {
     const { data: session } = useSession();
     const router = useRouter();
     const [users, setUsers] = useState([]);
     const [orders, setOrders] = useState([]);
+    const [search, setSearch] = useState("");
     const [showPendingPopover, setShowPendingPopover] = useState(false);
 
     const pendingUsers = users.filter(u => !u.isApproved);
@@ -28,15 +28,13 @@ export default function Dashboard() {
         }
     }, [session]);
 
-    const approveUser = async (id: string) => {
+        const approveUser = async (id: string) => {
         await fetch("/api/users/approve", {
             method: "POST",
             body: JSON.stringify({ id }),
         });
         setUsers(users.map(u => u._id === id ? { ...u, isApproved: true } : u));
     };
-
-    const [search, setSearch] = useState("");
 
     const filteredData = useMemo(() =>
         orders.filter(order =>
@@ -46,58 +44,20 @@ export default function Dashboard() {
         [orders, search]
     );
 
-    const columns = useMemo(
-        () => [
-            { Header: "Order ID", accessor: "orderId" },
-            { Header: "Client", accessor: "clientName" },
-            {
-                Header: "Move Date",
-                accessor: "moveDate",
-                Cell: ({ value }) => value
-                    ? format(new Date(value), "MM/dd/yyyy, hh:mm:ss a")
-                    : "N/A"
-            },
-            { Header: "Status", accessor: "tripStatus" },
-            { Header: "Assigned To", accessor: "lineItems[0].task", Cell: ({ value }) => value || "Unassigned" },
-            {
-                Header: "Action",
-                Cell: ({ row }) => (
-                    <button
-                        className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-700 transition"
-                        onClick={() => router.push(`/order-details?orderId=${row.original._id}`)}
-                    >
-                        View Details
-                    </button>
-                )
-            },
-        ], []
-    );
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
 
-    const {
-        getTableProps,
-        getTableBodyProps,
-        headerGroups,
-        page,
-        prepareRow,
-        nextPage,
-        previousPage,
-        canNextPage,
-        canPreviousPage,
-        pageOptions,
-        state: { pageIndex },
-    } = useTable(
-        { columns, data: filteredData, initialState: { pageIndex: 0, pageSize: 5 } },
-        useSortBy,
-        usePagination
-    );
-
+    const handleChangePage = (event, newPage) => setPage(newPage);
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
+    };
 
     return (
         <Layout>
             <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-
-            {/* User and Trip Sections in a Row */}
-            <section className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {/* User and Trip Sections in a Row */}
+                        <section className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Pending Users */}
                 <div
                     className="relative bg-gradient-to-r from-yellow-400 to-orange-500 p-4 rounded-xl shadow-md text-white cursor-pointer"
@@ -109,6 +69,7 @@ export default function Dashboard() {
                         <p className="text-3xl font-bold">{pendingUsers.length}</p>
                         <p className="text-sm">Total Pending Users</p>
                     </div>
+
 
                     {/* Popover Content */}
                     {showPendingPopover && (
@@ -134,6 +95,7 @@ export default function Dashboard() {
                     )}
                 </div>
 
+
                 {/* Approved Users */}
                 <div className="bg-gradient-to-r from-green-400 to-teal-500 p-4 rounded-xl shadow-md text-white">
                     <h2 className="text-xl font-semibold mb-3">Approved Users</h2>
@@ -142,6 +104,7 @@ export default function Dashboard() {
                         <p className="text-sm">Total Approved Users</p>
                     </div>
                 </div>
+
 
                 {/* Upcoming Trips */}
                 <div className="bg-gradient-to-r from-blue-400 to-indigo-500 p-4 rounded-xl shadow-md text-white">
@@ -152,39 +115,18 @@ export default function Dashboard() {
                     </div>
                 </div>
 
+
             </section>
-
-
-            {/* Pending Users */}
-            {/* <section className="mt-6">
-                <h2 className="text-xl font-semibold">Pending Users</h2>
-                {users.filter(u => !u.isApproved).map(user => (
-                    <div key={user._id} className="flex justify-between items-center p-3 border">
-                        <span>{user.name} ({user.email})</span>
-                        <button onClick={() => approveUser(user._id)} className="bg-green-500 text-white px-3 py-1 rounded">Approve</button>
-                    </div>
-                ))}
-            </section> */}
-
-            {/* Approved Users */}
-            {/* <section className="mt-6">
-                <h2 className="text-xl font-semibold">Approved Users</h2>
-                {users.filter(u => u.isApproved).map(user => (
-                    <div key={user._id} className="p-3 border">{user.name} ({user.email})</div>
-                ))}
-            </section> */}
-
-            {/* All Orders */}
 
             <section className="mt-6">
                 <div className="p-4 bg-white rounded-lg shadow-md">
                     <div className="flex justify-between items-center mb-4">
-                        <input
-                            type="text"
-                            placeholder="Search by Order ID or Client"
+                        <TextField
+                            label="Search by Order ID or Client"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="p-2 border rounded w-1/3"
+                            variant="outlined"
+                            size="small"
                         />
                         <CSVLink
                             data={orders}
@@ -195,60 +137,49 @@ export default function Dashboard() {
                         </CSVLink>
                     </div>
 
-                    <table {...getTableProps()} className="w-full mt-4 shadow-lg rounded-lg overflow-hidden">
-                        <thead className="bg-blue-600 text-white">
-                            {headerGroups.map(headerGroup => (
-                                <tr {...headerGroup.getHeaderGroupProps()}>
-                                    {headerGroup.headers.map(column => (
-                                        <th
-                                            {...column.getHeaderProps(column.getSortByToggleProps())}
-                                            className="p-3 text-left cursor-pointer"
-                                        >
-                                            {column.render("Header")}
-                                            <span>
-                                                {column.isSorted ? (column.isSortedDesc ? " 🔽" : " 🔼") : ""}
-                                            </span>
-                                        </th>
-                                    ))}
-                                </tr>
-                            ))}
-                        </thead>
-                        <tbody {...getTableBodyProps()}>
-                            {page.map(row => {
-                                prepareRow(row);
-                                return (
-                                    <tr key={row.id} {...row.getRowProps()} className="border-b hover:bg-blue-50">
-                                        {row.cells.map(cell => (
-                                            <td key={cell.column.id} {...cell.getCellProps()} className="p-3">
-                                                {cell.render("Cell")}
-                                            </td>
-                                        ))}
-                                    </tr>
-                                );
-                            })}
+                    <TableContainer component={Paper}>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Order ID</TableCell>
+                                    <TableCell>Client</TableCell>
+                                    <TableCell>Move Date</TableCell>
+                                    <TableCell>Status</TableCell>
+                                    <TableCell>Assigned To</TableCell>
+                                    <TableCell>Action</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((order) => (
+                                    <TableRow key={order._id}>
+                                        <TableCell>{order.orderId}</TableCell>
+                                        <TableCell>{order.clientName}</TableCell>
+                                        <TableCell>{order.moveDate ? format(new Date(order.moveDate), "MM/dd/yyyy, hh:mm:ss a") : "N/A"}</TableCell>
+                                        <TableCell>{order.tripStatus}</TableCell>
+                                        <TableCell><span className="bg-blue-500 text-white text-xs px-3 py-1 rounded-full">{order.lineItems[0]?.task || "Unassigned"}</span></TableCell>
+                                        <TableCell>
+                                            <Button
+                                                variant="contained"
+                                                color="primary"
+                                                onClick={() => router.push(`/order-details?orderId=${order._id}`)}
+                                            >
+                                                View Details
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
 
-                        </tbody>
-                    </table>
-
-                    <div className="flex justify-between items-center mt-4">
-                        <button
-                            onClick={previousPage}
-                            disabled={!canPreviousPage}
-                            className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
-                        >
-                            Previous
-                        </button>
-                        <span>
-                            Page {pageIndex + 1} of {pageOptions.length}
-                        </span>
-                        <button
-                            onClick={nextPage}
-                            disabled={!canNextPage}
-                            className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
-                        >
-                            Next
-                        </button>
-                    </div>
+                    <TablePagination
+                        component="div"
+                        count={filteredData.length}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        rowsPerPage={rowsPerPage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                    />
                 </div>
             </section>
         </Layout>

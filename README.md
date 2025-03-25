@@ -91,26 +91,3 @@ trukker/
 
 
 
-add a section as Customer Details
-in that Input and label as Customer Name , Customer Type as select with option Domestic or International
-Region Input Manually as well as select with KSA, Riyadh, Saudi, Qatar
-Invoice Number
-add a section as Order Details
-Move Type  as select with option Domestic or International
-Move Date & Time from date and time picker
-Asset,Loading POC, Commodity,UnLoading POC,Order Price , Order Cost, Platform Source , Inquiry Received On,
-Source Address, Destination Address
-add a section as Line Item SLA
-Total Cost 
-add a section as Trip Info
-Trip Type as select Full Truck, Half Truck, Empty Truck
-Truck Reg No, Driver Name,Supplier Name,Sourcing POC, Trip Cost,
-add a section as Line Items
-Category, sub category, quantity, unit price,amount, vat%,, vat charges, total, task
-add calculation formula here 
-unit price * quantity = Amount
-Amount%Vat= Vat Charge
-Total = Amount + Vat Charge
-this section should be an array add + icon to add one more filed to enter these details with these fields
-Trip Status as select with option 
-Upcoming,Start for pick up, at loading,completed loading , enroute, at unloading, completed this should be updated every time with date and time of every update is needed
