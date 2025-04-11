@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { ShimmerButton } from "./magicui/shimmer-button";
+import { toast } from 'react-toastify';
+import { useRouter } from 'next/navigation';
 
 const initialOrder = {
     orderId: "",
@@ -33,6 +35,7 @@ const initialOrder = {
 };
 
 export default function CreateOrderForm() {
+    const router = useRouter();
     const [order, setOrder] = useState(initialOrder);
     const [lineItems, setLineItems] = useState([{ category: "", subCategory: "", quantity: "", unitPrice: "", amount: "", vat: "", vatCharges: "", total: "", task: "" }]);
 
@@ -60,12 +63,20 @@ export default function CreateOrderForm() {
 
 
     const submitOrder = async () => {
-        const { orderId, ...orderData } = order; // Exclude `orderId`
+        const {...orderData } = order; 
         await fetch("/api/orders/create", {
             method: "POST",
             body: JSON.stringify({ ...orderData, lineItems }),
         });
-        alert("Order Created!");
+        //alert("Order Created!");
+        toast.success('🎉 Order created successfully!', {
+            position: 'top-right',
+            autoClose: 3000,
+          });
+    
+          setTimeout(() => {
+            router.push('/view-order');
+          }, 1500);
     };
 
 
@@ -151,7 +162,7 @@ export default function CreateOrderForm() {
                 {lineItems.map((item, index) => (
                     <div key={index} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-9 gap-2">
                         {Object.keys(item).map(key => (
-                            <div className="flex flex-col">
+                            <div key={`${index}-${key}`} className="flex flex-col">
                                 <label className="font-small capitalize text-sm">{key.replace(/([a-z])([A-Z])/g, '$1 $2')}</label>
                                 <input
                                     key={key}

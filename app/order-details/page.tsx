@@ -6,7 +6,6 @@ import Sidebar from "@/components/Sidebar";
 import Navbar from "@/components/Navbar";
 import { useSession } from "next-auth/react";
 import { FaLock } from "react-icons/fa";
-import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -15,12 +14,12 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button } from "@mui/material";
 
 export default function OrderDetails() {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
-  const router = useRouter();
+ 
 
   useEffect(() => {
     if (!orderId) return;

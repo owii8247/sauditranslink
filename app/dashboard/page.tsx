@@ -26,9 +26,9 @@ export default function Dashboard() {
             fetch("/api/users/list").then(res => res.json()).then(setUsers);
             fetch("/api/orders").then(res => res.json()).then(setOrders);
         }
-    }, [session]);
+    }, [session, router]);
 
-        const approveUser = async (id: string) => {
+    const approveUser = async (id: string) => {
         await fetch("/api/users/approve", {
             method: "POST",
             body: JSON.stringify({ id }),
@@ -56,8 +56,8 @@ export default function Dashboard() {
     return (
         <Layout>
             <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-                        {/* User and Trip Sections in a Row */}
-                        <section className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* User and Trip Sections in a Row */}
+            <section className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Pending Users */}
                 <div
                     className="relative bg-gradient-to-r from-yellow-400 to-orange-500 p-4 rounded-xl shadow-md text-white cursor-pointer"
